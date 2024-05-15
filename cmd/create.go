@@ -66,3 +66,47 @@ func init() {
 	// is called directly, e.g.:
 	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
+
+
+syntax= "proto3";
+package notes;
+
+option go_package = "./notes";
+
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+message Note {
+string id = 1;
+string title = 2;
+string content = 3;
+google.protobuf.Timestamp createdAt = 4;
+google.protobuf.Timestamp updatedAt = 5;
+}
+
+message CreateNoteRequest {
+string title = 1;
+string content = 2;
+}
+
+message GetNoteRequest {
+string id = 1;
+}
+
+message NoteList {
+repeated Note notes = 1;
+}
+
+message DeleteNoteRequest {
+string id = 1;
+}
+
+service NoteService {
+rpc CreateNote(CreateNoteRequest) returns (Note) {}
+rpc GetNote(GetNoteRequest) returns (Note) {}
+rpc ListNotes(google.protobuf.Empty) returns (NoteList) {}
+rpc DeleteNote(DeleteNoteRequest) returns (google.protobuf.Empty) {}
+}
+
+

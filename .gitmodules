@@ -1,6 +1,0 @@
-[submodule "protobufs"]
-	path = protobufs
-	url = git@github.com:anmho/protobufs.git
-[submodule "proto"]
-	path = proto
-	url = git@github.com:anmho/protobufs.git
