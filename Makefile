@@ -24,3 +24,10 @@ image:
 start: noteservice
 	dotenvx run -f .env.development -- ./bin/noteservice
 
+.PHONY: env
+env:
+	AWS_PROFILE=personal aws secretsmanager get-secret-value \
+      --secret-id noteservice-env \
+      --query SecretString \
+      --output text | tee .env
+
