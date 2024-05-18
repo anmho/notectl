@@ -1,7 +1,5 @@
 
 
-
-
 all: notectl noteservice gen
 
 
@@ -23,7 +21,6 @@ gen:
 image:
 	./build.sh
 
-.PHONY: publish
-publish:
-
+start: noteservice
+	dotenvx run -f .env.development -- ./bin/noteservice
 
