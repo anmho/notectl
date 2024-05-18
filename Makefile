@@ -2,16 +2,16 @@
 
 
 
-all: notectl noteserver gen
+all: notectl noteservice gen
 
 
 .PHONY: notectl
 notectl:
 	go build -o ./bin/notectl ./cmd/notectl
 
-.PHONY: noteserver
-noteserver:
-	go build -o ./bin/noteserver ./cmd/noteserver
+.PHONY: noteservice
+noteservice:
+	go build -o ./bin/noteservice ./cmd/noteservice
 
 .PHONY: gen
 gen:

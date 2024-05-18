@@ -16,6 +16,7 @@
         <method importPath="google.golang.org/grpc" receiver="*ClientConn" name="Close" />
         <method importPath="database/sql" receiver="*Conn" name="Close" />
         <method importPath="database/sql" receiver="*Rows" name="Close" />
+        <method importPath="database/sql" receiver="*Stmt" name="Close" />
       </methods>
     </inspection_tool>
   </profile>

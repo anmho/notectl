@@ -42,7 +42,7 @@ func (s Service) CreateNote(ctx context.Context, r *pb.CreateNoteRequest) (*pb.N
 	if err != nil {
 		return nil, fmt.Errorf("preparing statement: %w", err)
 	}
-
+	defer stmt.Close()
 	id := uuid.NewString()
 	rows, err := stmt.QueryContext(ctx, id, r.Title, r.Content, time.Now(), time.Now())
 	if err != nil {
@@ -65,6 +65,8 @@ func (s Service) GetNote(ctx context.Context, r *pb.GetNoteRequest) (*pb.Note, e
 	if err != nil {
 		return nil, fmt.Errorf("creating conn to get note: %w", err)
 	}
+	defer conn.Close()
+
 	stmt, err := conn.PrepareContext(ctx,
 		`SELECT id, title, content, createdAt, updatedAt 
 				FROM notes
@@ -73,13 +75,15 @@ func (s Service) GetNote(ctx context.Context, r *pb.GetNoteRequest) (*pb.Note, e
 	if err != nil {
 		return nil, fmt.Errorf("preparing query: %w", err)
 	}
+	defer stmt.Close()
+
 	rows, err := stmt.QueryContext(ctx, r.Id)
 	if err != nil {
 		return nil, fmt.Errorf("querying note id=%s: %w", r.Id, err)
 	}
+	defer rows.Close()
 
 	note := pb.Note{}
-
 	if rows.Next() {
 		err := scanNote(rows, &note)
 		if err != nil {
@@ -95,6 +99,7 @@ func (s Service) ListNotes(ctx context.Context, empty *emptypb.Empty) (*pb.NoteL
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "getting db connection: %w", err)
 	}
+	defer conn.Close()
 
 	stmt, err := conn.PrepareContext(ctx,
 		`SELECT id, title, content, createdAt, updatedAt 
@@ -103,10 +108,13 @@ func (s Service) ListNotes(ctx context.Context, empty *emptypb.Empty) (*pb.NoteL
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "preparing stmt: %w", err)
 	}
+	defer stmt.Close()
+
 	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "executing query: %w", err)
 	}
+	defer rows.Close()
 
 	var notes pb.NoteList
 	for rows.Next() {
@@ -127,11 +135,13 @@ func (s Service) DeleteNote(ctx context.Context, request *pb.DeleteNoteRequest) 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "connecting db: %w", err)
 	}
+	defer conn.Close()
 	stmt, err := conn.PrepareContext(ctx, "DELETE FROM notes WHERE id = $1")
 	if err != nil {
 		return nil, err
 	}
 
+	defer stmt.Close()
 	exec, err := stmt.Exec(request.Id)
 	if err != nil {
 		return nil, err

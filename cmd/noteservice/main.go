@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/anmho/notectl/notes"
 	"github.com/caarlos0/env/v6"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"google.golang.org/grpc"
 	"log"
+	"log/slog"
 	"net"
 )
 import pb "github.com/anmho/notectl/gen/proto/notes"
@@ -20,14 +23,26 @@ type Config struct {
 	DbPort int    `env:"DB_PORT"`
 }
 
-func main() {
+func InterceptorLogger(l *slog.Logger) logging.Logger {
+	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
+		l.Log(ctx, slog.Level(lvl), msg, fields)
+	})
+}
 
+func main() {
 	config := Config{}
 	err := env.Parse(&config)
 	if err != nil {
 		panic(err)
 	}
-	log.Println(config)
+
+	logger := slog.Default()
+
+	opts := []logging.Option{
+		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
+		// Add any other option (check functions starting with logging.With).
+	}
+	logger.Info("config: ", config)
 	connString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 		config.DbHost,
 		config.DbPort,
@@ -45,7 +60,9 @@ func main() {
 		panic(err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(logging.UnaryServerInterceptor(InterceptorLogger(logger), opts...)),
+	)
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		panic(err)
