@@ -21,7 +21,7 @@ gen:
 image:
 	./build.sh
 
-start: noteservice
+dev: noteservice
 	dotenvx run -f .env.development -- ./bin/noteservice
 
 .PHONY: env
@@ -31,3 +31,6 @@ env:
       --query SecretString \
       --output text | tee .env
 
+.PHONY: start
+start:
+	docker run --env-file .env -p 50051:50051 docker.io/anmho/noteservice:latest
