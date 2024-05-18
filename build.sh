@@ -5,14 +5,14 @@ set -e
 APP_NAME="noteservice"
 
 # Should run unit tests before build
-docker build -t $APP_NAME .
+# docker --platform=linux/amd64 build -t $APP_NAME .
 
 # Get the current branch and commit hash
 CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
 COMMIT_HASH=$(git rev-parse --short HEAD)
 
 
-## Define the Docker image name and tag with branch and commit hash
+# Define the Docker image name and tag with branch and commit hash
 DOCKER_USERNAME="anmho"
 IMAGE_NAME="$APP_NAME:$CURRENT_BRANCH-$COMMIT_HASH"
 IMAGE_LATEST_NAME="$APP_NAME:latest"
@@ -20,7 +20,7 @@ IMAGE_TAG="$DOCKER_USERNAME/$IMAGE_NAME"
 IMAGE_TAG_LATEST="$DOCKER_USERNAME/$IMAGE_LATEST_NAME"
 
 # Build the Docker image
-docker build -t "$IMAGE_NAME" .
+docker --platform=linux/amd64 build -t "$IMAGE_NAME" .
 docker tag "$IMAGE_NAME" "$IMAGE_TAG"
 docker tag "$IMAGE_NAME" "$IMAGE_TAG_LATEST"
 

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	pb "github.com/anmho/notectl/gen/proto/notes"
+	"github.com/anmho/notectl/notes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"time"
@@ -31,7 +32,7 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Println("rm called", args[0])
 
-		conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.Dial(notes.ServerURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			panic(err)
 		}

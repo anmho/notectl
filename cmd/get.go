@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	pb "github.com/anmho/notectl/gen/proto/notes"
+	"github.com/anmho/notectl/notes"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -38,7 +39,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient(notes.ServerURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			panic(err)
 		}

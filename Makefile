@@ -2,12 +2,16 @@
 
 all: notectl noteservice gen
 
+.PHONY: clean
+clean:
+	rm ./bin/*
 
 .PHONY: notectl
 notectl:
 	go build -o ./bin/notectl ./cmd/notectl
 
 .PHONY: noteservice
+
 noteservice:
 	go build -o ./bin/noteservice ./cmd/noteservice
 
@@ -17,8 +21,13 @@ gen:
         --go-grpc_out=./gen --go-grpc_opt=paths=source_relative \
         ./proto/notes/note.proto
 
+# Making image for local testing
 .PHONY: image
 image:
+	docker build -t noteservice .
+
+.PHONY: publish
+publish:
 	./build.sh
 
 dev: noteservice
@@ -26,11 +35,11 @@ dev: noteservice
 
 .PHONY: env
 env:
-	AWS_PROFILE=personal aws secretsmanager get-secret-value \
+	aws secretsmanager get-secret-value \
       --secret-id noteservice-env \
       --query SecretString \
       --output text | tee .env
 
 .PHONY: start
 start:
-	docker run --env-file .env -p 50051:50051 docker.io/anmho/noteservice:latest
+	docker run -d --env-file .env -p 50051:50051 docker.io/anmho/noteservice:latest
