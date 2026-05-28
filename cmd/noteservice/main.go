@@ -4,16 +4,21 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/anmho/notectl/notes"
 	"github.com/caarlos0/env/v6"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"log"
 	"log/slog"
 	"net"
+
+	"google.golang.org/grpc"
+
+	pb "github.com/anmho/notectl/gen/proto/notes"
 )
-import pb "github.com/anmho/notectl/gen/proto/notes"
 
 type Config struct {
 	DbHost string `env:"DB_HOST"`
@@ -42,7 +47,7 @@ func main() {
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
 		// Add any other option (check functions starting with logging.With).
 	}
-	logger.Info("config: ", config)
+	logger.Info("setting up: ", "config", config)
 	connString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 		config.DbHost,
 		config.DbPort,
@@ -63,6 +68,8 @@ func main() {
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(logging.UnaryServerInterceptor(InterceptorLogger(logger), opts...)),
 	)
+
+	reflection.Register(s)
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		panic(err)
